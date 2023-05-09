@@ -11,6 +11,9 @@
 # production
 /build
 
+anupam
+.env
+
 # misc
 .DS_Store
 .env.local
