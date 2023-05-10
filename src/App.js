@@ -1,12 +1,17 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import "./App.css";
 import BlogList from "./component/blogList";
 import blogService from "./services/blogService";
 import LoginForm from "./component/loginForm";
 import loginService from "./services/loginService";
+import Togglable from "./component/togglable";
 
 const App = () => {
   const [blogs, setBlogs] = useState([]);
+  const [updatedBlogs, setUpdatedBlogs] = useState([]);
+
+  const getUpdatedBlogs = updatedBlogs.length > 0 ? updatedBlogs : blogs;
+
   const [notifyMsg, setNotifyMsg] = useState([
     {
       message: null,
@@ -18,9 +23,7 @@ const App = () => {
   const [password, setPassword] = useState("");
   const [user, setUser] = useState(null);
 
-  const [blogTitle, setBlogTitle] = useState("");
-  const [blogContent, setBlogContent] = useState("");
-  const [blogUrl, setBlogUrl] = useState("");
+  const loginFormRef = useRef();
 
   const Notification = () => {
     if (notifyMsg.message === null) {
@@ -30,7 +33,10 @@ const App = () => {
   };
 
   useEffect(() => {
-    blogService.getAllBlogs().then((blogs) => setBlogs(blogs));
+    blogService.getAllBlogs().then((blogs) => {
+      console.log("fireing it: ", blogs);
+      setBlogs(blogs);
+    });
   }, []);
 
   useEffect(() => {
@@ -71,24 +77,12 @@ const App = () => {
     setUser(null);
   };
 
-  const saveBlog = async (event) => {
-    event.preventDefault();
-    console.log("Blog Title: ", blogTitle);
-    console.log("Blog Content: ", blogContent);
-    console.log("Blog Url: ", blogUrl);
-    const blogObj = {
-      title: blogTitle,
-      content: blogContent,
-      author: "Anupam Sahoo",
-      blog_url: blogUrl,
-    };
+  const saveBlog = async (blogObj) => {
     try {
       const newBlog = await blogService.createBlog(blogObj);
       console.log(newBlog);
-      setBlogs(blogs.concat(newBlog));
-      setBlogTitle("");
-      setBlogContent("");
-      setBlogUrl("");
+      setUpdatedBlogs(getUpdatedBlogs.concat(newBlog));
+
       setNotifyMsg({
         message: `A new Blog "${newBlog.title}" --- Created Successfully`,
         messageClass: "success",
@@ -107,26 +101,83 @@ const App = () => {
     }
   };
 
+  const likeBlog = async (blogId) => {
+    const updatedBlog = [...getUpdatedBlogs].find((item) => item.id === blogId);
+    const blogObj = { ...updatedBlog, likes: updatedBlog.likes + 1 };
+    console.log("New Blog: ", blogObj);
+    const updateLike = await blogService.increaseLike(blogObj, blogId);
+    console.log(updateLike);
+    setUpdatedBlogs(
+      [...getUpdatedBlogs].map((n) => (n.id !== blogId ? n : updateLike))
+    );
+  };
+
+  const sortBlogAsc = () => {
+    const sortIt = [...getUpdatedBlogs].sort((a, b) => a.likes - b.likes);
+    //console.log(sortIt);
+    setUpdatedBlogs(sortIt);
+  };
+  const sortBlogDesc = () => {
+    const sortIt = [...getUpdatedBlogs].sort((a, b) => b.likes - a.likes);
+    //console.log(sortIt);
+    setUpdatedBlogs(sortIt);
+  };
+  const resetBlog = () => {
+    setUpdatedBlogs([]);
+    console.log(blogs);
+    //setUpdatedBlogs(blogs);
+    //console.log(getUpdatedBlogs);
+  };
+  const deleteBlog = async (id) => {
+    console.log(id);
+    try {
+      await blogService.remobeBlog(id);
+      const blogListUpdate = getUpdatedBlogs.filter((item) => item.id !== id);
+      setUpdatedBlogs(blogListUpdate);
+      setNotifyMsg({
+        message: `Blog "${id}" Deleted`,
+        messageClass: "success",
+      });
+      setTimeout(() => {
+        setNotifyMsg({ message: null, messageClass: null });
+      }, 5000);
+    } catch (exception) {
+      setNotifyMsg({
+        message: "Something went wrong on server",
+        messageClass: "error",
+      });
+      setTimeout(() => {
+        setNotifyMsg({ message: null, messageClass: null });
+      }, 5000);
+    }
+  };
+
   const loginForm = () => (
     <>
-      <LoginForm
-        handleLogin={handleLogin}
-        username={({ target }) => setUsername(target.value)}
-        password={({ target }) => setPassword(target.value)}
-      />
+      <Togglable
+        buttonLabelShow="Show Login Form"
+        buttonLabelHide="Hide Login Form"
+        ref={loginFormRef}
+      >
+        <LoginForm
+          handleLogin={handleLogin}
+          username={({ target }) => setUsername(target.value)}
+          password={({ target }) => setPassword(target.value)}
+        />
+      </Togglable>
     </>
   );
   const blogsList = () => (
     <>
       <BlogList
-        blogs={blogs}
+        blogs={getUpdatedBlogs}
         saveBlog={saveBlog}
-        blogTitle={({ target }) => setBlogTitle(target.value)}
-        titleValue={blogTitle}
-        blogContent={({ target }) => setBlogContent(target.value)}
-        contentValue={blogContent}
-        blogUrl={({ target }) => setBlogUrl(target.value)}
-        urlValue={blogUrl}
+        likeBlog={likeBlog}
+        sortBlogAsc={sortBlogAsc}
+        sortBlogDesc={sortBlogDesc}
+        resetBlog={resetBlog}
+        deleteBlog={deleteBlog}
+        currentUser={user}
       />
     </>
   );
