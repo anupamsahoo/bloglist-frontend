@@ -1,28 +1,32 @@
-import { useState, useRef } from "react";
-import Togglable from "./togglable";
+import { useState, useRef } from "react"
+import Togglable from "./togglable"
+
+import PropTypes from "prop-types"
+
 const BlogList = (props) => {
-  const [blogTitle, setBlogTitle] = useState("");
-  const [blogContent, setBlogContent] = useState("");
-  const [blogUrl, setBlogUrl] = useState("");
-  const blogformRef = useRef();
-  const blogContentRef = useRef();
+  const [blogTitle, setBlogTitle] = useState("")
+  const [blogContent, setBlogContent] = useState("")
+  const [blogUrl, setBlogUrl] = useState("")
+  const blogformRef = useRef()
+  const blogContentRef = useRef()
+
   const createBlog = async (event) => {
-    event.preventDefault();
-    console.log("Blog Title: ", blogTitle);
-    console.log("Blog Content: ", blogContent);
-    console.log("Blog Url: ", blogUrl);
+    event.preventDefault()
+    console.log("Blog Title: ", blogTitle)
+    console.log("Blog Content: ", blogContent)
+    console.log("Blog Url: ", blogUrl)
     const blogObj = {
       title: blogTitle,
       content: blogContent,
       author: "Anupam Sahoo",
       blog_url: blogUrl,
-    };
-    props.saveBlog(blogObj);
-    setBlogTitle("");
-    setBlogContent("");
-    setBlogUrl("");
-    blogformRef.current.toggleVisibility();
-  };
+    }
+    props.saveBlog(blogObj)
+    setBlogTitle("")
+    setBlogContent("")
+    setBlogUrl("")
+    blogformRef.current.toggleVisibility()
+  }
 
   const deleteBlog = (item) => {
     if (
@@ -30,9 +34,9 @@ const BlogList = (props) => {
         `Remove blog You're not gonna need it! by ${item.author} and ID: ${item.id}`
       )
     ) {
-      props.deleteBlog(item.id);
+      props.deleteBlog(item.id)
     }
-  };
+  }
 
   return (
     <>
@@ -78,29 +82,46 @@ const BlogList = (props) => {
       <button onClick={() => props.sortBlogAsc()}>Sort ASC Blog</button>
       <button onClick={() => props.sortBlogDesc()}>Sort DESC Blog</button>
       <button onClick={() => props.resetBlog()}>Reset Sort</button>
-      {props.blogs.map((item, i) => (
-        <div className="blogList" key={item.id}>
-          <h3>{item.title}</h3>
-          <Togglable
-            buttonLabelShow="Show Content"
-            buttonLabelHide="Hide Content"
-            ref={blogContentRef}
-          >
-            <p>{item.content}</p>
-            <p>
-              <strong>Author:</strong> {item.author}, <strong>URL: </strong>
-              {item.blog_url}
-              <br />
-              <strong>Likes:</strong> {item.likes},{" "}
-              <button onClick={() => props.likeBlog(item.id)}>Like</button>
-            </p>
-            {item.user.id === props.currentUser.user_id ? (
-              <button onClick={() => deleteBlog(item)}>Delete This Blog</button>
-            ) : null}
-          </Togglable>
-        </div>
-      ))}
+      {props.blogs.map((item) => {
+        const itemUserID = item.user.id ? item.user.id : item.user
+        return (
+          <div className="blogList" key={item.id}>
+            <h3>{item.title}</h3>
+            <Togglable
+              buttonLabelShow="Show Content"
+              buttonLabelHide="Hide Content"
+              ref={blogContentRef}
+            >
+              <p>{item.content}</p>
+              <p>
+                <strong>Author:</strong> {item.author}, <strong>URL: </strong>
+                {item.blog_url}
+                <br />
+                <strong>Likes:</strong> {item.likes},{" "}
+                <button onClick={() => props.likeBlog(item.id)}>Like</button>
+              </p>
+              {itemUserID === props.currentUser.user_id ? (
+                <button onClick={() => deleteBlog(item)}>
+                  Delete This Blog
+                </button>
+              ) : null}
+            </Togglable>
+          </div>
+        )
+      })}
     </>
-  );
-};
-export default BlogList;
+  )
+}
+
+BlogList.propTypes = {
+  saveBlog: PropTypes.func.isRequired,
+  blogs: PropTypes.array.isRequired,
+  currentUser: PropTypes.object.isRequired,
+  likeBlog: PropTypes.func.isRequired,
+  deleteBlog: PropTypes.func.isRequired,
+  sortBlogAsc: PropTypes.func.isRequired,
+  sortBlogDesc: PropTypes.func.isRequired,
+  resetBlog: PropTypes.func.isRequired,
+}
+
+export default BlogList

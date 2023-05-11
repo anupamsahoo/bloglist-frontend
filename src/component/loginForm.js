@@ -15,6 +15,6 @@ const LoginForm = ({ handleLogin, username, password }) => {
         </form>
       </div>
     </>
-  );
-};
-export default LoginForm;
+  )
+}
+export default LoginForm
