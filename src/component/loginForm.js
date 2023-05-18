@@ -4,13 +4,14 @@ const LoginForm = ({ handleLogin, username, password }) => {
       <div className="blogList">
         <form onSubmit={handleLogin}>
           <p>
-            Username: <input type="text" onChange={username} />
+            Username: <input type="text" id="username" onChange={username} />
           </p>
           <p>
-            Password: <input type="password" onChange={password} />
+            Password:{" "}
+            <input type="password" id="password" onChange={password} />
           </p>
           <p>
-            <button>Submit</button>
+            <button id="loginButton">Submit</button>
           </p>
         </form>
       </div>

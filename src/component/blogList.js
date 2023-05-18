@@ -1,7 +1,7 @@
 import { useState, useRef } from "react"
 import Togglable from "./togglable"
 
-import PropTypes from "prop-types"
+//import PropTypes from "prop-types"
 
 const BlogList = (props) => {
   const [blogTitle, setBlogTitle] = useState("")
@@ -54,6 +54,8 @@ const BlogList = (props) => {
               type="text"
               onChange={(event) => setBlogTitle(event.target.value)}
               value={blogTitle}
+              placeholder="title"
+              id="blogTitle"
             />
           </p>
           <p>
@@ -62,6 +64,8 @@ const BlogList = (props) => {
             <textarea
               onChange={(event) => setBlogContent(event.target.value)}
               value={blogContent}
+              placeholder="content"
+              id="blogContent"
             />
           </p>
           <p>
@@ -71,10 +75,14 @@ const BlogList = (props) => {
               type="text"
               onChange={(event) => setBlogUrl(event.target.value)}
               value={blogUrl}
+              placeholder="blog_url"
+              id="blogUrl"
             />
           </p>
           <p>
-            <button>Save Blog</button>
+            <button className="createBlog" id="createBlog" role="button">
+              Save Blog
+            </button>
           </p>
         </form>
       </Togglable>
@@ -82,26 +90,32 @@ const BlogList = (props) => {
       <button onClick={() => props.sortBlogAsc()}>Sort ASC Blog</button>
       <button onClick={() => props.sortBlogDesc()}>Sort DESC Blog</button>
       <button onClick={() => props.resetBlog()}>Reset Sort</button>
-      {props.blogs.map((item) => {
-        const itemUserID = item.user.id ? item.user.id : item.user
+      {props.blogs.map((blog) => {
+        const itemUserName = blog.username ? blog.username : blog.user.username
         return (
-          <div className="blogList" key={item.id}>
-            <h3>{item.title}</h3>
+          <div className="blogList" key={blog.id}>
+            <h3>{blog.title}</h3>
             <Togglable
               buttonLabelShow="Show Content"
               buttonLabelHide="Hide Content"
               ref={blogContentRef}
             >
-              <p>{item.content}</p>
+              <p>{blog.content}</p>
               <p>
-                <strong>Author:</strong> {item.author}, <strong>URL: </strong>
-                {item.blog_url}
+                <strong>Author:</strong> {blog.author}, <strong>URL:</strong>
+                <span className="blogUrl">{blog.blog_url}</span>
                 <br />
-                <strong>Likes:</strong> {item.likes},{" "}
-                <button onClick={() => props.likeBlog(item.id)}>Like</button>
+                <strong>Likes:</strong>{" "}
+                <span className="blogLikes" id="likesCount">
+                  {blog.likes}
+                </span>
+                ,
+                <button id="likeButton" onClick={() => props.likeBlog(blog.id)}>
+                  Like
+                </button>
               </p>
-              {itemUserID === props.currentUser.user_id ? (
-                <button onClick={() => deleteBlog(item)}>
+              {itemUserName === props.currentUser.username ? (
+                <button id="deleteBlog" onClick={() => deleteBlog(blog)}>
                   Delete This Blog
                 </button>
               ) : null}
@@ -113,7 +127,7 @@ const BlogList = (props) => {
   )
 }
 
-BlogList.propTypes = {
+/* BlogList.propTypes = {
   saveBlog: PropTypes.func.isRequired,
   blogs: PropTypes.array.isRequired,
   currentUser: PropTypes.object.isRequired,
@@ -122,6 +136,6 @@ BlogList.propTypes = {
   sortBlogAsc: PropTypes.func.isRequired,
   sortBlogDesc: PropTypes.func.isRequired,
   resetBlog: PropTypes.func.isRequired,
-}
+} */
 
 export default BlogList
